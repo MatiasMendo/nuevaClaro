@@ -1,0 +1,19 @@
+{
+  "name": "genesyscloud_downloader-template",
+  "version": "1.0.0",
+  "description": "Genesys Cloud Downloader Template for basic Audio and Metadata",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.3",
+    "cluster": "^0.7.7",
+    "genesyscloud_downloader-template": "file:",
+    "log4js": "^6.9.1",
+    "node-cron": "^3.0.3",
+    "purecloud-platform-client-v2": "^200.0.0"
+  }
+}
