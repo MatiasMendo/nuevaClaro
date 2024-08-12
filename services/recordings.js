@@ -74,7 +74,7 @@ async function getRecordingsMetadata(conversation) {
             const record_duracion_audio = getDuration(record_start_time, record_end_time)
 
             // tipo_llamada            // (REQUIRED): Call Direction (In|Out)bound
-            const tipo_llamada = conversation.originatingDirection == "Inbound" ? "Inbound" : "Outbound"
+            const tipo_llamada = conversation.originatingDirection == "inbound" ? "Inbound" : "Outbound"
 
 
 
