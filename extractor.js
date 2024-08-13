@@ -17,17 +17,11 @@ const apylayer_url = process.argv[3];
 let interval = process.argv[4];
 const max_audio = process.argv[5];
 
-let daily_quota = {
-    "Emergencia_GSS" : 1000,
-    "Comercial_GSS"  : 1000
-}
-
-
 async function main() {
     // Se obtienen las configuraciones del tenant en el api layer
     await config.instance().configure(tenant, apylayer_url)
-    const cron = config.instance().getObject().microservices.extractor.cron
-    // daily_quota = config.instance().getObject().quota.job
+    const cron = config.instance().getObject().addons.extractor.cron
+    let daily_quota = config.instance().getObject().addons.extractor.quota
 
     // Se conecta a la API de Genesys Cloud
     await connectToGenesys()
@@ -41,7 +35,6 @@ async function main() {
 
         if(max_audio){ // En caso de que exista una cantidad máxima de audios a descargar (NO TIEMPO) entregadas manualmente
             logger.info(`[main] Se define manualmente el máximo de ${max_audio} audios a descargar por cola`)
-            // daily_quota = Math.ceil(max_audio/intervals.length)
 
             for (let id in daily_quota) {
                 daily_quota[id] = Math.ceil(max_audio/intervals.length)
@@ -114,23 +107,21 @@ async function getConversations(interval){
     logger.info(`[stageConversations] Comienza proceso de selección de conversaciones para llenar cuota diaria de`)
     logger.info(daily_quota)
 
-    // let current_quota = 0
-
-
-    let current_quota = {
-        "Emergencia_GSS"  : 0,
-        "Comercial_GSS"  : 0
+    // Se crea el current quota
+    let current_quota = {}
+    for (let id in daily_quota){
+        current_quota[id] = 0
     }
 
     // Se seleccionan conversaciones hasta llenar la quota diaria
     const recordingsMetadata = []
     for (const current_conversation of shuffledConversations) {
-        let {formattedMetadata, recordingMetadata} = await getRecordingsMetadata(current_conversation)
+        let formattedMetadata = await getRecordingsMetadata(current_conversation)
 
         let allReachedQuota = true;
 
-        for (let id in current_quota) {
-            if (current_quota[id] < daily_quota[id]) {
+        for (let id in daily_quota) {
+            if (current_quota[id] <= daily_quota[id]) {
                 allReachedQuota = false;
                 logger.info(`Falta que se llene la cuota de ${id}: ${current_quota[id]}/${daily_quota[id]}`)
             }
@@ -139,29 +130,39 @@ async function getConversations(interval){
             break;
         }
 
-        logger.info(recordingMetadata.Custom_data_01)
-        if(current_quota[recordingMetadata.Custom_data_01] <= daily_quota[recordingMetadata.Custom_data_01]){
+        if(current_quota[formattedMetadata.customdata.queueId] <= daily_quota[formattedMetadata.customdata.queueId]){
             if(isConversationValid(formattedMetadata)) {
                 logger.info(`Se han agregado ${recordingsMetadata.length}`)
                 recordingsMetadata.push(formattedMetadata)
-                current_quota[recordingMetadata.Custom_data_01] = current_quota[recordingMetadata.Custom_data_01] + (max_audio ? 1 : formattedMetadata.duration)
+                current_quota[formattedMetadata.customdata.queueId] = current_quota[formattedMetadata.customdata.queueId] + (max_audio ? 1 : formattedMetadata.duration)
             }
         }
     }
-    logger.info(`[stageConversations] Se seleccionaron ${recordingsMetadata.length} de ${conversations.length} con cuota diaria`)
-    logger.info(current_quota)
-
+    logger.info(`[stageConversations] Se seleccionaron ${recordingsMetadata.length} de ${conversations.length} con cuota diaria: `, current_quota)
     return recordingsMetadata
 }
 
 function isConversationValid(metadata) {
     const fileState = metadata ? metadata.customdata.fileState : ""
-    if(fileState === "AVAILABLE"){
-        if(60 <= metadata.duration && metadata.duration <= 1200){
-            return true
-        }
+    const duration_rules = config.instance().getObject().addons.extractor.duration
+
+    if(fileState !== "AVAILABLE"){
+        return false
     }
-    return false
+    if (duration_rules.gt && duration <= rules.gt) {
+        return false;
+    }
+    if (duration_rules.gte && duration < rules.gte) {
+        return false;
+    }
+    if (duration_rules.lt && duration >= rules.lt) {
+        return false;
+    }
+    if (duration_rules.lte && duration > rules.lte) {
+        return false;
+    }
+
+    return true;
 }
 
 main();

@@ -79,22 +79,22 @@ async function getRecordingsMetadata(conversation) {
             const tipo_llamada = conversation.originatingDirection == "inbound" ? "Inbound" : "Outbound"
 
 
-
-            /* CUSTOM DATA */
-            // Custom_data_01          // QUEUE ID
-            let Custom_data_01 = ""
+            /* USEFULL DATA */
+            // QUEUE ID
+            let queue_id = ""
             for (const participant of conversation.participants) {
                 if(participant.purpose == 'agent' && participant.userId){
                     for (const session of participant.sessions){
                         for (const segment of session.segments) {
-                            if(Custom_data_01 != segment.queueId){
-                                Custom_data_01 = segment.queueId == "1fee010a-94f9-4e0c-893d-abe1594aeb23" ? "Emergencia_GSS" : segment.queueId == "0afc4d64-89a1-4062-95d7-6001448c645a" ? "Comercial_GSS" : ""
-                                // logger.info(`[QUEUE ID] :: ${Custom_data_01}`)
-                            }
+                            queue_id = queue_id != segment.queueId ? segment.queueId : queue_id
                         }
                     }
                 }
             }
+            /* CUSTOM DATA */
+            // Custom_data_01          // QUEUE ID
+            const Custom_data_01 = queue_id == "1fee010a-94f9-4e0c-893d-abe1594aeb23" ? "Emergencia_GSS" : queue_id == "0afc4d64-89a1-4062-95d7-6001448c645a" ? "Comercial_GSS" : ""
+
 
             if(isDurationGreater(record_duracion_audio, record_duracion_audio_seleccionado)){
                 recordingMetadata = {
@@ -146,14 +146,15 @@ async function getRecordingsMetadata(conversation) {
                     "duration" : durationToSeconds(record_duracion_audio),
                     "metadata" : JSON.stringify(recordingMetadata),
                     "customdata" : {
-                        "recordingId": recording.id,
-                        "conversationId" : conversation.conversationId,
-                        "fileState" : recording.fileState
+                        "recordingId"       : recording.id,
+                        "conversationId"    : conversation.conversationId,
+                        "fileState"         : recording.fileState,
+                        "queueId"           : queue_id
                     }
                 }
             }
         }
-        return {formattedMetadata, recordingMetadata}
+        return formattedMetadata
     }
 }
 
