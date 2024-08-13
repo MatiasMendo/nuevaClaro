@@ -1,4 +1,4 @@
-const { getApiInstances } = require('../utils/auth');
+const { getApiInstances, reconectToGenesys } = require('../utils/auth');
 const logger = require('../utils/Logger');
 const { formatDate, getDuration, isDurationGreater, durationToSeconds } = require('../utils/utilities');
 const { getUser } = require('./users');
@@ -16,6 +16,8 @@ async function getRecordingsMetadata(conversation) {
         } catch (e) {
             logger.error(e, `[ERROR] :: [RECORDING] :: [getRecordingsMetadata] :: Error getting recording for conversationId ${conversation.conversationId}`)
             retry ++
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            await reconectToGenesys()
         }
     }
     let record_duracion_audio_seleccionado = "00:00:00"

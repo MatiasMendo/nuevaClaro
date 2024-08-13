@@ -22,8 +22,23 @@ async function postInApiLayer(audio){
 
         };
 
-        logger.info(body);
-        const postResult=await axios.request(body);
+        // logger.info(body);
+
+        let retry = 0
+        let postResult = {}
+        while (retry < 5){
+            try {
+                postResult = await axios.request(body);
+                if(postResult.status !== 200){
+                    throw new Error(postResult.data);
+                }
+                break
+            } catch (e) {
+                logger.error(e, `[postInapiLayer(Error)]: [${retry}/5]: No se logro postear la informacion en la capa de api ${postResult.data}`)
+                retry ++
+                await new Promise(resolve => setTimeout(resolve, 1000))
+            }
+        }
         if(postResult.status !== 200){
             throw new Error(postResult.data);
         }
@@ -66,8 +81,21 @@ async function patchInApiLayer(audios, jobId){
             data:reqBody,
 
         };
-        logger.info(body)
-        const postResult=await axios.request(body);
+        // logger.info(body)
+        let retry = 0
+        let postResult = {}
+        while (retry < 5){
+            try {
+                postResult = await axios.request(body);
+                if(postResult.status !== 200){
+                    throw new Error(postResult.data);
+                }
+                break
+            } catch (e) {
+                logger.error(e, `[patchInapiLayer(Error)]: [${retry}/5]: No se logro postear la informacion en la capa de api ${postResult.data}`)
+                retry ++
+            }
+        }
         if(postResult.status !== 200){
             throw new Error(postResult.data);
         }
