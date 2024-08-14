@@ -22,7 +22,7 @@ async function main() {
     // Se obtienen las configuraciones del tenant en el api layer
     await config.instance().configure(tenant, apylayer_url)
     const cron = config.instance().getObject().addons.extractor.cron
-    let daily_quota = config.instance().getObject().addons.extractor.quota
+    daily_quota = config.instance().getObject().addons.extractor.quota
 
     // Se conecta a la API de Genesys Cloud
     await connectToGenesys()
