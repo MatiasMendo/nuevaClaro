@@ -16,12 +16,13 @@ const tenant = process.argv[2];
 const apylayer_url = process.argv[3];
 let interval = process.argv[4];
 const max_audio = process.argv[5];
+let daily_quota
 
 async function main() {
     // Se obtienen las configuraciones del tenant en el api layer
     await config.instance().configure(tenant, apylayer_url)
     const cron = config.instance().getObject().addons.extractor.cron
-    let daily_quota = config.instance().getObject().addons.extractor.quota
+    daily_quota = config.instance().getObject().addons.extractor.quota
 
     // Se conecta a la API de Genesys Cloud
     await connectToGenesys()
@@ -130,7 +131,7 @@ async function getConversations(interval){
             break;
         }
 
-        if(current_quota[formattedMetadata.customdata.queueId] <= daily_quota[formattedMetadata.customdata.queueId]){
+        if(current_quota[formattedMetadata.customdata.queueId] + formattedMetadata.duration <= daily_quota[formattedMetadata.customdata.queueId] + (max_audio ? 0 : 900)){ // 15 minutos de relajo
             if(isConversationValid(formattedMetadata)) {
                 logger.info(`Se han agregado ${recordingsMetadata.length}`)
                 recordingsMetadata.push(formattedMetadata)
@@ -144,21 +145,28 @@ async function getConversations(interval){
 
 function isConversationValid(metadata) {
     const fileState = metadata ? metadata.customdata.fileState : ""
+    const duration = metadata ? metadata.duration : ""
     const duration_rules = config.instance().getObject().addons.extractor.duration
+
+    logger.info(`Duration: ${duration} and fileState: ${fileState}`)
 
     if(fileState !== "AVAILABLE"){
         return false
     }
-    if (duration_rules.gt && duration <= rules.gt) {
+    if (duration_rules.gt && duration <= duration_rules.gt) {
+        logger.info(`${duration} <= ${duration_rules.gt}`)
         return false;
     }
-    if (duration_rules.gte && duration < rules.gte) {
+    if (duration_rules.gte && duration < duration_rules.gte) {
+        logger.info(`${duration} < ${duration_rules.gte}`)
         return false;
     }
-    if (duration_rules.lt && duration >= rules.lt) {
+    if (duration_rules.lt && duration >= duration_rules.lt) {
+        logger.info(`${duration} >= ${duration_rules.gte}`)
         return false;
     }
-    if (duration_rules.lte && duration > rules.lte) {
+    if (duration_rules.lte && duration > duration_rules.lte) {
+        logger.info(`${duration} > ${duration_rules.lte}`)
         return false;
     }
 

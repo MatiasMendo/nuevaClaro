@@ -7,8 +7,8 @@ let client;
 
 async function connectToGenesys() {
     logger.info("[connectToGenesys] Creando cliente de purecloud.")
-    const client_id = config.instance().getObject().microservices.extractor.credentials.client_id
-    const client_secret = config.instance().getObject().microservices.extractor.credentials.client_secret
+    const client_id = config.instance().getObject().addons.extractor.credentials.client_id
+    const client_secret = config.instance().getObject().addons.extractor.credentials.client_secret
 
     client = platform.ApiClient.instance
     client.setEnvironment('mypurecloud.com')
@@ -20,8 +20,8 @@ async function connectToGenesys() {
 
 async function reconectToGenesys() {
     logger.warn("[reconectToGenesys] Reconectando cliente de purecloud.")
-    const client_id = config.instance().getObject().microservices.extractor.credentials.client_id
-    const client_secret = config.instance().getObject().microservices.extractor.credentials.client_secret
+    const client_id = config.instance().getObject().addons.extractor.credentials.client_id
+    const client_secret = config.instance().getObject().addons.extractor.credentials.client_secret
 
     const { accessToken } = await client.loginClientCredentialsGrant(client_id, client_secret)
     client.setAccessToken(accessToken)

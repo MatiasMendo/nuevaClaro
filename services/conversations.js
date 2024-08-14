@@ -9,7 +9,7 @@ async function getConversationsPage(pageNumber, pageSize = 100, interval) {
     let conversations = []
     logger.info(`[getConversationsPage] :: [pageNumber] :: ${pageNumber} :: [pageSize] :: ${pageSize}`)
 
-    const query = config.instance().getObject().microservices.extractor.credentials.query
+    const query = config.instance().getObject().addons.extractor.credentials.query
     query.interval = interval
     query.paging = {
         pageSize,
