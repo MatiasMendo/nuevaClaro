@@ -22,7 +22,6 @@ async function getRecordingsMetadata(conversation) {
     }
     let record_duracion_audio_seleccionado = "00:00:00"
     let recordingMetadata = undefined
-
     let formattedMetadata = undefined
 
     if(recordingResult){
@@ -93,7 +92,7 @@ async function getRecordingsMetadata(conversation) {
             }
             /* CUSTOM DATA */
             // Custom_data_01          // QUEUE ID
-            const Custom_data_01 = queue_id == "1fee010a-94f9-4e0c-893d-abe1594aeb23" ? "Emergencia_GSS" : queue_id == "0afc4d64-89a1-4062-95d7-6001448c645a" ? "Comercial_GSS" : ""
+            // const Custom_data_01 = queue_id == "1fee010a-94f9-4e0c-893d-abe1594aeb23" ? "Emergencia_GSS" : queue_id == "0afc4d64-89a1-4062-95d7-6001448c645a" ? "Comercial_GSS" : ""
 
 
             if(isDurationGreater(record_duracion_audio, record_duracion_audio_seleccionado)){
@@ -108,7 +107,7 @@ async function getRecordingsMetadata(conversation) {
                     "record_end_time": record_end_time,
                     "record_duracion_audio": record_duracion_audio,
                     "tipo_llamada": tipo_llamada,
-                    "Custom_data_01": Custom_data_01,
+                    // "Custom_data_01": Custom_data_01,
                     // "Custom_data_02": "",
                     // "Custom_data_03": "",
                     // "Custom_data_04": "",
