@@ -22,7 +22,7 @@ async function main() {
     // Se obtienen las configuraciones del tenant en el api layer
     await config.instance().configure(tenant, apylayer_url)
     const cron = config.instance().getObject().addons.extractor.cron
-    daily_quota = config.instance().getObject().addons.extractor.quota
+    let daily_quota = config.instance().getObject().addons.extractor.quota
 
     // Se conecta a la API de Genesys Cloud
     await connectToGenesys()
@@ -147,6 +147,8 @@ function isConversationValid(metadata) {
     const fileState = metadata ? metadata.customdata.fileState : ""
     const duration = metadata ? metadata.duration : ""
     const duration_rules = config.instance().getObject().addons.extractor.duration
+
+    logger.info(`Duration: ${duration} and fileState: ${fileState}`)
 
     if(fileState !== "AVAILABLE"){
         return false
