@@ -42,7 +42,7 @@ async function postInApiLayer(audio){
         if(postResult.status !== 200){
             throw new Error(postResult.data);
         }
-        logger.info(`[postInapiLayer()]: Proceso finalizado correctamente ${postResult.data.job_id}.`);
+        logger.info(`[postInapiLayer()]: Se logro crear el job: ${postResult.data.job_id}.`);
         return{
             "status":200,
             "data":postResult.data.job_id
@@ -92,23 +92,23 @@ async function patchInApiLayer(audios, jobId){
                 }
                 break
             } catch (e) {
-                logger.error(e, `[patchInapiLayer(Error)]: [${retry}/5]: No se logro postear la informacion en la capa de api ${postResult.data}`)
+                logger.error(e, `[patchInapiLayer(Error)]: [${retry}/5]: No se logro hacer un patch de la informacion en la capa de api ${postResult.data}`)
                 retry ++
             }
         }
         if(postResult.status !== 200){
             throw new Error(postResult.data);
         }
-        logger.info(`[patchInapiLayer()]: Proceso finalizado correctamente ${jobId}.`);
+        logger.info(`[patchInapiLayer()]: Se logro agregar conversaciones al job ${jobId}.`);
         // return{
         //     "status":200,
         //     "data":`[patchInapiLayer()]: Proceso finalizado correctamente ${jobId}.`
         // };
     }catch(e){
-        logger.error(`[patchInapiLayer(Error)]: No se logro postear la informacion en la capa de api ${e}`);
+        logger.error(`[patchInapiLayer(Error)]: No se logro hacer un patch de la informacion en la capa de api ${e}`);
         return{
             "status":500,
-            "data":`[patchInapiLayer(Error)]: No se logro postear la informacion en la capa de api ${e}`
+            "data":`[patchInapiLayer(Error)]: No se logro hacer un patch de la informacion en la capa de api ${e}`
         };
     }
 }

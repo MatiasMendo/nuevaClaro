@@ -6,6 +6,7 @@ const { getUser } = require('./users');
 
 async function getRecordingsMetadata(conversation) {
     // Se obtiene el metadata del recording de mayor duracion de todos los recordings de una conversacion
+    logger.info(`[getRecordingsMetadata]: Obteniendo grabaciones asociadas a la conversación: ${conversation.conversationId}`)
     let retry = 0
     let recordingResult = undefined
     while (retry < 5){
@@ -25,6 +26,7 @@ async function getRecordingsMetadata(conversation) {
     let formattedMetadata = undefined
 
     if(recordingResult){
+        logger.info(`[getRecordingsMetadata]: Se extrayeron: ${recordingResult.length}`)
         for (const recording of recordingResult) {
             if(recording.media != "audio"){
                 // logger.info(`[getRecordingsMetadata] :: [conversationId] :: ${conversation.conversationId} :: [recordingId] :: ${recording.id} :: ${recording.media}`)

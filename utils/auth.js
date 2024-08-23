@@ -9,9 +9,11 @@ async function connectToGenesys() {
     logger.info("[connectToGenesys] Creando cliente de purecloud.")
     const client_id = config.instance().getObject().addons.extractor.credentials.client_id
     const client_secret = config.instance().getObject().addons.extractor.credentials.client_secret
+    const region = config.instance().getObject().addons.extractor.credentials.region
 
     client = platform.ApiClient.instance
-    client.setEnvironment('mypurecloud.com')
+    const environment = platform.PureCloudRegionHosts[region]
+    client.setEnvironment(environment)
     client.setPersistSettings(true)
 
     const { accessToken } = await client.loginClientCredentialsGrant(client_id, client_secret)

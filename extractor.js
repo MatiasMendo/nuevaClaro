@@ -4,10 +4,10 @@ const config = require('./utils/Configuration.js');
 const NodeCron = require('node-cron')
 const { patchInApiLayer, postInApiLayer } = require('./services/apiLayer.js');
 const { getRecordingsMetadata } = require('./services/recordings.js');
-const { getDailyIntervals, shuffle, divideIntoChunks } = require('./utils/utilities.js');
+const { getDailyIntervals, shuffle, divideIntoChunks, getInterval, executionsInMonth } = require('./utils/utilities.js');
 const { getConversationsPage } = require('./services/conversations.js');
 
-if(process.argv.length < 5) {
+if(process.argv.length < 3) {
     logger.error("[INPUT][] Starting microservice error arguments");
     return;
 }
@@ -16,13 +16,15 @@ const tenant = process.argv[2];
 const apylayer_url = process.argv[3];
 let interval = process.argv[4];
 const max_audio = process.argv[5];
-let daily_quota
+const daily_quota = {}
 
 async function main() {
     // Se obtienen las configuraciones del tenant en el api layer
     await config.instance().configure(tenant, apylayer_url)
     const cron = config.instance().getObject().addons.extractor.cron
-    daily_quota = config.instance().getObject().addons.extractor.quota
+    const daily_interval = config.instance().getObject().addons.extractor.daily_interval
+    const monthly_quota = config.instance().getObject().addons.extractor.quota
+
 
     // Se conecta a la API de Genesys Cloud
     await connectToGenesys()
@@ -32,13 +34,21 @@ async function main() {
 
 
         // Separar el intervalo en intervalos diarios
-        const intervals = getDailyIntervals(interval)
+        const intervals = getDailyIntervals(interval, daily_interval)
 
+
+        // Se establese las cuotas diarias
         if(max_audio){ // En caso de que exista una cantidad máxima de audios a descargar (NO TIEMPO) entregadas manualmente
             logger.info(`[main] Se define manualmente el máximo de ${max_audio} audios a descargar por cola`)
-
-            for (let id in daily_quota) {
+            // Se obtiene el daily_quota usando el max audio
+            for (let id in monthly_quota) {
                 daily_quota[id] = Math.ceil(max_audio/intervals.length)
+            }
+        } else {
+            // Se obtiene el daily_quota usando el cron
+            for (let id in monthly_quota) {
+                const numberOfExecutionsInMonth = executionsInMonth(cron, interval)
+                daily_quota[id] = monthly_quota[id] / numberOfExecutionsInMonth
             }
         }
 
@@ -52,8 +62,18 @@ async function main() {
         logger.info(`[main] Ejecución automática descargará grabaciones de ${tenant} en el periodo ${cron}`)
         NodeCron.schedule(cron, async () => {
             // Se obtiene el intervalo
-            interval = getInterval()
+            interval = getInterval(daily_interval)
             logger.info(`[main] Ejecución automática descargando grabaciones de ${tenant} para el intervalo ${interval}`)
+
+            // Se obtiene el daily_quota
+            logger.info(`[main] Obteniendo el daily_quota a partir del monthly_quota:`)
+            logger.info(monthly_quota)
+
+            const numberOfExecutionsInMonth = executionsInMonth(cron, interval)
+
+            for (let id in monthly_quota) {
+                daily_quota[id] = monthly_quota[id] / numberOfExecutionsInMonth
+            }
 
             // Se obtienen las conversaciones de ese intervalo
             const conversations = await getConversations(interval)
@@ -118,7 +138,6 @@ async function getConversations(interval){
     const recordingsMetadata = []
     for (const current_conversation of shuffledConversations) {
         let formattedMetadata = await getRecordingsMetadata(current_conversation)
-
         let allReachedQuota = true;
 
         for (let id in daily_quota) {
@@ -129,6 +148,9 @@ async function getConversations(interval){
         }
         if (allReachedQuota){
             break;
+        }
+        if(!formattedMetadata) {
+            continue;
         }
 
         if(current_quota[formattedMetadata.customdata.queueId] + formattedMetadata.duration <= daily_quota[formattedMetadata.customdata.queueId] + (max_audio ? 0 : 900)){ // 15 minutos de relajo

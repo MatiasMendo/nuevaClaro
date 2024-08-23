@@ -1,13 +1,15 @@
 const logger = require('./Logger')
+const cronParser = require('cron-parser');
 
-function getInterval() {
+function getInterval(daily_interval_times) {
     // Ejemplo de return: "2024-05-01T00:00:00.000Z/2024-05-30T00:00:00.000Z"
     const now = new Date();
     let start, end;
     start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 0, 0, 0, 0));
     end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));
 
-    return `${start.toISOString()}/${end.toISOString()}`;
+    const interval = `${start.toISOString()}/${end.toISOString()}`
+    return adjustTimeInInterval(interval, daily_interval_times);
 }
 
 function formatDate(isoDateString){
@@ -58,7 +60,7 @@ function isDurationGreater(duration1, duration2) {
     return seconds1 > seconds2;
 }
 
-function getDailyIntervals(interval){
+function getDailyIntervals(interval, daily_interval_times){
     logger.info(`[getDailyIntervals] Obteniendo lista de intervalos diarios de ${interval}`)
     // Dividir el intervalo en dos fechas
     const [start, end] = interval.split("/");
@@ -80,7 +82,8 @@ function getDailyIntervals(interval){
     // Iterar sobre cada día en el intervalo
     for (let current = startDate; current < endDate; current = addDays(current, 1)) {
         const nextDay = addDays(current, 1);
-        dailyIntervals.push(`${current.toISOString()}/${nextDay.toISOString()}`);
+        const dInterval = adjustTimeInInterval(`${current.toISOString()}/${nextDay.toISOString()}`,daily_interval_times)
+        dailyIntervals.push(dInterval);
     }
     return dailyIntervals
 }
@@ -109,6 +112,54 @@ function divideIntoChunks(array, chunkSize) {
     return result;
 }
 
+function adjustTimeInInterval(interval, daily_interval_times){
+    // Corregira el intervalo para que considere el daily_interval_times.start_time y daily_interval_times.end_time
+
+    // Verifica si daily_interval_times existe
+    if (daily_interval_times && daily_interval_times.start_time && daily_interval_times.end_time) {
+        const [start, end] = interval.split('/');
+
+        // Ajusta las horas de inicio y fin según daily_interval_times
+        const newStart = `${start.split('T')[0]}T${daily_interval_times.start_time}`;
+        const newEnd = `${end.split('T')[0]}T${daily_interval_times.end_time}`;
+
+        // Ejemplo de return: "2024-05-01T00:00:00.000Z/2024-05-30T00:00:00.000Z"
+        return `${newStart}Z/${newEnd}Z`;
+    }
+
+    // Retorna el mismo intervalo si daily_interval_times no existe
+    return interval;
+}
+
+function executionsInMonth(period, _interval) {
+
+    const [startDate] = _interval.split('/');
+    const date = new Date(startDate)
+    const month = date.getUTCMonth() + 1;
+    const year = date.getUTCFullYear();
+
+    // Crear una fecha de inicio y fin para el mes
+    const start = new Date(year, month - 1, 1, 0, 0, 0);
+    const end = new Date(year, month, 1, 0, 0, 0);
+
+    // Parsear el cron
+    const interval = cronParser.parseExpression(period, { currentDate: start, endDate: end });
+
+    let count = 0;
+
+    // Contar cuántas veces se ejecuta
+    logger.info(`[executionsInMonth] Obteniendo cuantas veces se ejecutara ${period} en el mes de ${month} para el año ${year}`)
+    try {
+        while (interval.next()) {
+            count++;
+        }
+    } catch (err) {
+        // Se termina cuando llegamos al final del mes
+    }
+
+    return count;
+}
+
 module.exports = {
     getInterval,
     formatDate,
@@ -117,5 +168,6 @@ module.exports = {
     isDurationGreater,
     getDailyIntervals,
     shuffle,
-    divideIntoChunks
+    divideIntoChunks,
+    executionsInMonth
 }
