@@ -1,4 +1,4 @@
-const { getApiInstances } = require('../utils/auth')
+const { getApiInstances, reconectToGenesys } = require('../utils/auth')
 const logger = require('../utils/Logger')
 const config = require('../utils/Configuration.js');
 

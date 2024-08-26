@@ -1,4 +1,4 @@
-const { getApiInstances } = require('../utils/auth.js');
+const { getApiInstances, reconectToGenesys } = require('../utils/auth.js');
 const logger = require('../utils/Logger')
 
 async function getUser(userId) {
@@ -12,6 +12,7 @@ async function getUser(userId) {
         } catch (error) {
             logger.warn(`Error getting user ${userId}`)
             logger.error(error)
+            await reconectToGenesys()
             await new Promise(resolve => setTimeout(resolve, 1000))
             retry++
         }
