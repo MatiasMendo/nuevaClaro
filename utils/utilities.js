@@ -10,6 +10,7 @@ function getInterval(daily_interval_times) {
     end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1, 23, 59, 59, 999));
 
     const interval = `${start.toISOString()}/${end.toISOString()}`
+
     return adjustTimeInInterval(interval, daily_interval_times);
 }
 
@@ -115,7 +116,8 @@ function divideIntoChunks(array, chunkSize) {
 
 function adjustTimeInInterval(interval, daily_interval_times){
     // Corregira el intervalo para que considere el daily_interval_times.start_time y daily_interval_times.end_time
-
+    logger.info(`[adjustTimeInInterval]: Ajustando intervalo ${interval} a base de:`)
+    logger.info(daily_interval_times)
     // Verifica si daily_interval_times existe
     if (daily_interval_times && daily_interval_times.start_time && daily_interval_times.end_time) {
         const [start, end] = interval.split('/');
