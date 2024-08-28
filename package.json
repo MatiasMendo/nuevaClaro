@@ -14,6 +14,7 @@
     "cron-parser": "^4.9.0",
     "genesyscloud_downloader-template": "file:",
     "log4js": "^6.9.1",
+    "moment-timezone": "^0.5.45",
     "node-cron": "^3.0.3",
     "purecloud-platform-client-v2": "^200.0.0"
   }

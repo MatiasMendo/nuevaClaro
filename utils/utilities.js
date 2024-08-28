@@ -1,5 +1,6 @@
 const logger = require('./Logger')
 const cronParser = require('cron-parser');
+const moment = require('moment-timezone');
 
 function getInterval(daily_interval_times) {
     // Ejemplo de return: "2024-05-01T00:00:00.000Z/2024-05-30T00:00:00.000Z"
@@ -13,6 +14,7 @@ function getInterval(daily_interval_times) {
 }
 
 function formatDate(isoDateString){
+    // Formatear la fecha como 'YYYY-MM-DD HH:MM:SS'
     const date = new Date(isoDateString);
 
     // Obtener los componentes de la fecha
@@ -24,7 +26,6 @@ function formatDate(isoDateString){
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
 
-    // Formatear la fecha como 'YYYY-MM-DD HH:MM:SS'
     const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
     return formattedDate;
@@ -123,7 +124,17 @@ function adjustTimeInInterval(interval, daily_interval_times){
         const newStart = `${start.split('T')[0]}T${daily_interval_times.start_time}`;
         const newEnd = `${end.split('T')[0]}T${daily_interval_times.end_time}`;
 
-        // Ejemplo de return: "2024-05-01T00:00:00.000Z/2024-05-30T00:00:00.000Z"
+        if(daily_interval_times.timezone){
+            // Convertir la fecha de inicio y fin a la zona horaria especificada
+            const newStartMoment = moment.tz(newStart, daily_interval_times.timezone)
+            const newEndMoment = moment.tz(newEnd, daily_interval_times.timezone)
+
+            // Convertir ambas fechas a UTC
+            const startUTC = newStartMoment.utc().format();
+            const endUTC = newEndMoment.utc().format();
+
+            return `${startUTC}/${endUTC}`;
+        }
         return `${newStart}Z/${newEnd}Z`;
     }
 
