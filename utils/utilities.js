@@ -114,22 +114,27 @@ function divideIntoChunks(array, chunkSize) {
     return result;
 }
 
-function adjustTimeInInterval(interval, daily_interval_times){
-    // Corregira el intervalo para que considere el daily_interval_times.start_time y daily_interval_times.end_time
-    logger.info(`[adjustTimeInInterval]: Ajustando intervalo ${interval} a base de:`)
-    logger.info(daily_interval_times)
+function adjustTimeInInterval(interval, daily_interval_times) {
+    logger.info(`[adjustTimeInInterval]: Ajustando intervalo ${interval} a base de:`);
+    logger.info(daily_interval_times);
+
     // Verifica si daily_interval_times existe
     if (daily_interval_times && daily_interval_times.start_time && daily_interval_times.end_time) {
         const [start, end] = interval.split('/');
 
         // Ajusta las horas de inicio y fin según daily_interval_times
         const newStart = `${start.split('T')[0]}T${daily_interval_times.start_time}`;
-        const newEnd = `${end.split('T')[0]}T${daily_interval_times.end_time}`;
+        const newEnd = `${start.split('T')[0]}T${daily_interval_times.end_time}`; // Mantener la misma fecha
 
-        if(daily_interval_times.timezone){
+        if (daily_interval_times.timezone) {
             // Convertir la fecha de inicio y fin a la zona horaria especificada
-            const newStartMoment = moment.tz(newStart, daily_interval_times.timezone)
-            const newEndMoment = moment.tz(newEnd, daily_interval_times.timezone)
+            const newStartMoment = moment.tz(newStart, daily_interval_times.timezone);
+            const newEndMoment = moment.tz(newEnd, daily_interval_times.timezone);
+
+            // Si la hora de fin es anterior o igual a la hora de inicio, ajustamos para que no pase al día siguiente
+            if (newEndMoment.isBefore(newStartMoment)) {
+                newEndMoment.add(1, 'day');
+            }
 
             // Convertir ambas fechas a UTC
             const startUTC = newStartMoment.utc().format();
@@ -143,6 +148,7 @@ function adjustTimeInInterval(interval, daily_interval_times){
     // Retorna el mismo intervalo si daily_interval_times no existe
     return interval;
 }
+
 
 function executionsInMonth(period, _interval) {
 
