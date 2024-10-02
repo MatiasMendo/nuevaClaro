@@ -1,6 +1,8 @@
 const logger = require('./Logger')
 const cronParser = require('cron-parser');
 const moment = require('moment-timezone');
+const config = require('./Configuration.js');
+
 
 function getInterval(daily_interval_times) {
     // Ejemplo de return: "2024-05-01T00:00:00.000Z/2024-05-30T00:00:00.000Z"
@@ -14,22 +16,44 @@ function getInterval(daily_interval_times) {
     return adjustTimeInInterval(interval, daily_interval_times);
 }
 
-function formatDate(isoDateString){
-    // Formatear la fecha como 'YYYY-MM-DD HH:MM:SS'
-    const date = new Date(isoDateString);
+// function formatDate(isoDateString){
+//     // Formatear la fecha como 'YYYY-MM-DD HH:MM:SS'
+//     const date = new Date(isoDateString);
 
-    // Obtener los componentes de la fecha
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses en JavaScript van de 0 a 11
-    const day = String(date.getDate()).padStart(2, '0');
+//     //Timezone
+//     const timezone = config.instance().getObject().addons.extractor.daily_interval.timezone
+//     if(timezone){
+//         // Cambiar la fecha, que  esta en UTC al timezone
+//     }
 
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+//     // Obtener los componentes de la fecha
+//     const year = date.getFullYear();
+//     const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses en JavaScript van de 0 a 11
+//     const day = String(date.getDate()).padStart(2, '0');
 
-    const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+//     const hours = String(date.getHours()).padStart(2, '0');
+//     const minutes = String(date.getMinutes()).padStart(2, '0');
+//     const seconds = String(date.getSeconds()).padStart(2, '0');
 
-    return formattedDate;
+//     const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+//     return formattedDate;
+// }
+
+function formatDate(isoDateString) {
+    // Obtener la zona horaria del objeto config
+    const timezone = config.instance().getObject().addons.extractor.daily_interval.timezone;
+
+    // Formatear la fecha con timezone si está presente
+    let date;
+    if (timezone) {
+        date = moment.utc(isoDateString).tz(timezone);
+    } else {
+        date = moment.utc(isoDateString);
+    }
+
+    // Devolver el formato 'YYYY-MM-DD HH:mm:ss'
+    return date.format('YYYY-MM-DD HH:mm:ss');
 }
 
 function getDuration(recordStartTime,recordEndTime){

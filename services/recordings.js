@@ -66,7 +66,7 @@ async function getRecordingsMetadata(conversation) {
 
             // datetime                // (REQUIRED): Time when the call was placed, in format YYYY-MM-DD HH:MM:SS
             const datetime = formatDate(recording.startTime)
-
+            logger.info(`[datetime]: ${recording.startTime} -> ${datetime}`)
             // record_start_time       // (REQUIRED): Time when the recording call started, in format YYYY-MM-DD HH:MM:SS
             const record_start_time = formatDate(recording.startTime)
 
@@ -94,9 +94,7 @@ async function getRecordingsMetadata(conversation) {
             }
             /* CUSTOM DATA */
             // Custom_data_01          // QUEUE ID
-            // const Custom_data_01 = queue_id == "1fee010a-94f9-4e0c-893d-abe1594aeb23" ? "Emergencia_GSS" : queue_id == "0afc4d64-89a1-4062-95d7-6001448c645a" ? "Comercial_GSS" : ""
-
-
+            // Custom_data_01 = queue_id
             if(isDurationGreater(record_duracion_audio, record_duracion_audio_seleccionado)){
                 recordingMetadata = {
                     "nombre_audio": nombre_audio,
