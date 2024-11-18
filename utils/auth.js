@@ -7,10 +7,16 @@ let client;
 
 async function connectToGenesys() {
     logger.info("[connectToGenesys] Creando cliente de purecloud.")
-    const client_id = config.instance().getObject().addons.extractor.credentials.client_id
+    //const client_id = config.instance().getObject().addons.extractor.credentials.client_id
+    const client_id = '4210fa06-e827-45dd-8ddb-22c09c2bdab3'
     const client_secret = config.instance().getObject().addons.extractor.credentials.client_secret
+    //1const client_secret = 'XIOxJluCN66sRdN-ErL2N-rI89HbGGmq-gf9HjZnPF8'
     const region = config.instance().getObject().addons.extractor.credentials.region
-
+    //const region = config.instance().getObject()?.addons?.extractor?.credentials?.region || "us-east-1";
+    //const region = "login.cac1.pure.cloud";
+    console.log("Client ID:", client_id);
+    console.log("Client Secret:", client_secret);
+    console.log("Region:", region);
     client = platform.ApiClient.instance
     const environment = platform.PureCloudRegionHosts[region]
     client.setEnvironment(environment)

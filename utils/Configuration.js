@@ -27,6 +27,7 @@ class Configuration {
                     params: { body: JSON.stringify({tenant_id: tenant_id_}) },
                     headers: { 'Content-Type': 'application/json' }
                 });
+            
             this.configuration = result.data;
             return true;
 

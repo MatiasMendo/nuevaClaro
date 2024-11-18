@@ -21,7 +21,13 @@ const daily_quota = {}
 async function main() {
     // Se obtienen las configuraciones del tenant en el api layer
     await config.instance().configure(tenant, apylayer_url)
-    const cron = config.instance().getObject().addons.extractor.cron
+    //const cron = config.instance().getObject().addons.extractor.cron //supuesto error
+    const extractorConfig = config.instance().getObject()?.addons?.extractor || {
+        cron: "0 0 * * *",
+        daily_interval: "1d",
+        quota: 100
+    };
+    const cron = extractorConfig.cron;
     const daily_interval = config.instance().getObject().addons.extractor.daily_interval
     const monthly_quota = config.instance().getObject().addons.extractor.quota
 

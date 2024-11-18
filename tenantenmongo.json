@@ -1,0 +1,58 @@
+{
+    "_id": {
+      "$oid": "6735ff1a20b6224baece8e9f"
+    },
+    "tenant_id": "claro_CA",
+    "active": true,
+    "description": "Canada_centro_amaerica",
+    "folder_base": "C:Users/mendo/OneDrive/Escritorio/claro/ingestor_core/tenants",
+    "data_retention": 60,
+    "microservices": {
+      "input": {
+        "name": "input",
+        "previous": "",
+        "type": "genesys-cloud",
+        "credentials": {
+          "client_id": "4210fa06-e827-45dd-8ddb-22c09c2bdab3",
+          "client_secret": "XIOxJluCN66sRdN-ErL2N-rI89HbGGmq-gf9HjZnPF8",
+          "region": "ca_central_1"
+        },
+        "addons": {
+          "chunk_size": 30,
+          "wakeup_s": 10,
+          "url": "http://127.0.0.1:9992/downloader"
+        }
+      },
+      "converter": {
+        "name": "converter",
+        "previous": "addon_downloader"
+      },
+      "zipper": {
+        "name": "zipper",
+        "previous": "converter"
+      },
+      "uploader": {
+        "name": "uploader",
+        "previous": "zipper",
+        "bucket": "bucket-grabaciones-mare",
+        "bucket_folder": "ZipsTest"
+      }
+    },
+    "addons": {
+      "extractor": {
+        "cron": "0 0 * * *",
+        "daily_interval": "1d",
+        "quota": 100,
+        "credentials": {
+          "client_id": "4210fa06-e827-45dd-8ddb-22c09c2bdab3",
+          "client_secret": "XIOxJluCN66sRdN-ErL2N-rI89HbGGmq-gf9HjZnPF8",
+          "region": "ca_central_1"
+        }
+      }
+    },
+    "quota": {
+      "job": 100,
+      "monthly": 200
+    },
+    "version": 1
+  }
